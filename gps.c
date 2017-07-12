@@ -27,6 +27,7 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #define  LOG_TAG  "gps_serial"
 
@@ -48,7 +49,8 @@ typedef struct {
 
 static GpsState  _gps_state[1];
 static int    id_in_fixed[12];
-//#define  GPS_DEBUG  1
+
+// #define  GPS_DEBUG  1
 
 #define  DFR(...)   ALOGD(__VA_ARGS__)
 
@@ -945,7 +947,7 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
     state->control[1] = -1;
     state->fd         = -1;
     state->callbacks  = callbacks;
-    D("gps_state_init");
+    DFR("gps_state_init");
 
     // Look for a kernel-provided device name
     if (__system_property_get("ro.kernel.android.gps",prop) == 0) {
@@ -963,7 +965,7 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
         return;
     }
 
-    D("GPS will read from %s", device);
+    DFR("GPS will read from %s", device);
 
     // Disable echo on serial lines
     if ( isatty( state->fd ) ) {
@@ -974,7 +976,10 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
         ios.c_iflag &= (~(ICRNL | INLCR)); /* Stop \r -> \n & \n -> \r translation on input */
         ios.c_iflag |= (IGNCR | IXOFF);  /* Ignore \r & XON/XOFF on input */
 	// Set baud rate and other flags
+    // changed from ...gpsttybaud to ...speed for compatibility with the 
+    // gonass serial driver from github
         if (__system_property_get("ro.kernel.android.gpsttybaud",baud)==0) {
+            // default 9600 is not configured
             strcpy(baud,"9600");
         }
 
@@ -1149,7 +1154,7 @@ static const GpsInterface  serialGpsInterface = {
 
 const GpsInterface* gps_get_hardware_interface()
 {
-    D("GPS dev get_hardware_interface");
+    DFR("GPS dev get_hardware_interface");
     return &serialGpsInterface;
 }
 
@@ -1210,7 +1215,7 @@ static void gps_dev_set_nmea_message_rate(int fd, char *msg, int rate)
 
     gps_dev_send(fd, buff);
 
-    D("GPS sent to device: %s", buff);
+    DFR("GPS sent to device: %s", buff);
 }
 
 
@@ -1257,7 +1262,7 @@ static void gps_dev_start(int fd)
     // Set full message rate
     gps_dev_set_message_rate(fd, GPS_DEV_HIGH_UPDATE_RATE);
 
-    D("GPS dev start initiated");
+    DFR("GPS dev start initiated");
 }
 
 
@@ -1266,13 +1271,13 @@ static void gps_dev_stop(int fd)
     // Set slow message rate
     gps_dev_set_message_rate(fd, GPS_DEV_SLOW_UPDATE_RATE);
 
-    D("GPS dev stop initiated");
+    DFR("GPS dev stop initiated");
 }
 
 
 static int open_gps(const struct hw_module_t* module, char const* name, struct hw_device_t** device)
 {
-    D("GPS dev open_gps");
+    DFR("GPS dev open_gps");
     struct gps_device_t *dev = malloc(sizeof(struct gps_device_t));
     memset(dev, 0, sizeof(*dev));
 
@@ -1300,3 +1305,5 @@ struct hw_module_t HAL_MODULE_INFO_SYM = {
     .author = "Keith Conger",
     .methods = &gps_module_methods,
 };
+
+

@@ -21,28 +21,37 @@ PayPal: keith.conger@gmail.com
 Bitcoin: 1Pg54vVnaLxNsziA6cy9CTefoEG5iAm9Uh
 
 
-Additional notes:
+
+### Additional notes:
 
 command line compile for RTAndroid 7.1.1 ARM (RPI 3):
 
-see also:
-https://developer.android.com/about/versions/nougat/android-7.0-changes.html
-
-
+* Checkout from github
+```
 git clone https://github.com/iszilagyigit/platform_hardware_libhardware.git
 git clone https://github.com/iszilagyigit/platform_system_core.git
+```
 
+* Install toolchain for your platform using android-ndk
 
-arm-linux-androideabi-gcc 
-	-I/opt/dev/android-ndk-tc-arm-api24/sysroot/usr/include
-	-I../platform_hardware_libhardware-android-7.1.1_r43/include
-	-I../platform_system_core-android-7.1.1_r43/include 
-	-L../../gitclones/gps-glonass-android-driver/jni/libs/armeabi
-	-llog
-	-lcutils
-	-lm
-	gps.c power-stub.c
+* Build with toolchain's clang
+```
+# clang
+$HOME/work/arm7-andoid-toolchain/bin/arm-linux-androideabi-clang  \
+   -Wall
+   -I ../platform_system_core/libcutils/include \
+   -I ../platform_system_core/libsystem/include \
+   -I ../platform_system_core/liblog/include   \
+   -I ../platform_hardware_libhardware/include  \
+   -llog -lm \
+   -shared \
+   -o gps.default.so \
+   gps.c power-stub.c
+```
 
-Note:  list of all dynamically linked shared libraries of a given .so
-example:
- arm-linux-androideabi-readelf -dW /opt/dev/gitclones/gps-glonass-android-driver/jni/libs/armeabi/libcutils.so
+Note:  
+	List of all dynamically linked shared libraries of a given .so
+    ( arm-linux-androideabi-readelf -dW gps.default.so )
+
+See also:
+https://developer.android.com/about/versions/nougat/android-7.0-changes.html
