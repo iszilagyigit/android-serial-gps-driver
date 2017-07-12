@@ -31,9 +31,10 @@
 #define  LOG_TAG  "gps_serial"
 
 #include <cutils/log.h>
-#include <cutils/sockets.h>
-#include <cutils/properties.h>
+
+#include <sys/system_properties.h>
 #include <hardware/gps.h>
+
 
 /* this is the state of our connection to the qemu_gpsd daemon */
 typedef struct {
@@ -931,8 +932,8 @@ gps_state_thread( void*  arg )
 static void
 gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
 {
-    char   prop[PROPERTY_VALUE_MAX];
-    char   baud[PROPERTY_VALUE_MAX];
+    char   prop[PROP_VALUE_MAX];
+    char   baud[PROP_VALUE_MAX];
     char   device[256];
     int    ret;
     int    done = 0;
@@ -947,7 +948,7 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
     D("gps_state_init");
 
     // Look for a kernel-provided device name
-    if (property_get("ro.kernel.android.gps",prop,"") == 0) {
+    if (__system_property_get("ro.kernel.android.gps",prop) == 0) {
         D("no kernel-provided gps device name");
         return;
     }
@@ -973,7 +974,10 @@ gps_state_init( GpsState*  state, GpsCallbacks* callbacks )
         ios.c_iflag &= (~(ICRNL | INLCR)); /* Stop \r -> \n & \n -> \r translation on input */
         ios.c_iflag |= (IGNCR | IXOFF);  /* Ignore \r & XON/XOFF on input */
 	// Set baud rate and other flags
-        property_get("ro.kernel.android.gpsttybaud",baud,"9600");
+        if (__system_property_get("ro.kernel.android.gpsttybaud",baud)==0) {
+            strcpy(baud,"9600");
+        }
+
 	if (strcmp(baud, "4800") == 0) {
             ALOGE("Setting gps baud rate to 4800");
             ios.c_cflag = B4800 | CRTSCTS | CS8 | CLOCAL | CREAD;
