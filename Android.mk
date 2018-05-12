@@ -1,5 +1,12 @@
 # Copyright (C) 2011 The Android-x86 Open Source Project
 
+#  for build:
+#  export PATH=$HOME/dev/android-ndk-r14b/:$PATH
+#  export PATH=$HOME/work/arm7-andoid-toolchain/bin/:$PATH
+#
+#  cd $HOME/work/gps-glonass-android-driver/jni
+#  ndk-build -w V=1
+
 ifeq ($(strip $(BOARD_HAS_GPS_HARDWARE)),true)
 LOCAL_PATH := $(call my-dir)
 
