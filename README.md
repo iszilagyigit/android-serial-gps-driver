@@ -19,3 +19,39 @@ If you find any of this useful and want to show appreciation see below:
 
 PayPal: keith.conger@gmail.com
 Bitcoin: 1Pg54vVnaLxNsziA6cy9CTefoEG5iAm9Uh
+
+
+
+### Additional notes:
+
+command line compile for RTAndroid 7.1.1 ARM (RPI 3):
+
+* Checkout from github
+```
+git clone https://github.com/iszilagyigit/platform_hardware_libhardware.git
+git clone https://github.com/iszilagyigit/platform_system_core.git
+```
+
+* Install toolchain for your platform using android-ndk
+
+* Build with toolchain's clang
+```
+# clang
+$HOME/work/arm7-andoid-toolchain/bin/arm-linux-androideabi-clang  \
+   -Wall
+   -I ../platform_system_core/libcutils/include \
+   -I ../platform_system_core/libsystem/include \
+   -I ../platform_system_core/liblog/include   \
+   -I ../platform_hardware_libhardware/include  \
+   -llog -lm \
+   -shared \
+   -o gps.default.so \
+   gps.c power-stub.c
+```
+
+Note:  
+	List of all dynamically linked shared libraries of a given .so
+    ( arm-linux-androideabi-readelf -dW gps.default.so )
+
+See also:
+https://developer.android.com/about/versions/nougat/android-7.0-changes.html
